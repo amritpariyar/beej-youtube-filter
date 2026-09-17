@@ -161,7 +161,7 @@ the rest are settings.
 ## Before you submit
 
 - [ ] Register as a developer: one-off 5 USD fee at the Developer Dashboard
-- [ ] `npm run pack` or the zip command in README; upload the zip, not the folder
+- [x] `python tools/pack.py` builds `beej-<version>.zip`; upload the zip, not the folder
 - [x] Privacy policy hosted at a public URL (paste it into the form)
 - [x] At least one real screenshot
 - [ ] Bump `version` in `manifest.json` for every resubmission - the store rejects a
