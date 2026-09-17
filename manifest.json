@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "Beej: Country, Language and Channel Filter for YouTube",
+  "version": "0.3.0",
+  "description": "Filter YouTube by a channel's declared country, by the content's language, or block channels one by one.",
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "32": "src/icons/icon32.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  },
+  "minimum_chrome_version": "102",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://youtube.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background/worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "run_at": "document_start",
+      "all_frames": false,
+      "css": [
+        "src/content/beej.css"
+      ],
+      "js": [
+        "src/shared/data.js",
+        "src/shared/util.js",
+        "src/content/lang.js",
+        "src/content/extract.js",
+        "src/content/enforce.js",
+        "src/content/observer.js"
+      ]
+    }
+  ],
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "Beej filter",
+    "default_icon": {
+      "16": "src/icons/icon16.png",
+      "32": "src/icons/icon32.png",
+      "48": "src/icons/icon48.png",
+      "128": "src/icons/icon128.png"
+    }
+  }
+}

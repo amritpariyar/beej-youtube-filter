@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Beej &mdash; Country, Language &amp; Channel Filter for YouTube</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header class="head">
+    <h1>Beej <span class="h1-what">Country, Language &amp; Channel Filter for YouTube</span></h1>
+    <p class="sub">Hide YouTube videos by the channel's declared country, by the language of the
+      content, or by blocking a channel outright.</p>
+    <label class="switch switch--major">
+      <input type="checkbox" id="enabled">
+      <span>Filtering enabled</span>
+    </label>
+    <p class="status" id="rules-summary"></p>
+
+    <div class="modes" id="modes">
+      <label class="mode">
+        <input type="radio" name="mode" value="block" id="mode-block">
+        <span>
+          <b>Block mode</b>
+          <small>Hide the countries and languages you pick. Everything else stays.</small>
+        </span>
+      </label>
+      <label class="mode">
+        <input type="radio" name="mode" value="only" id="mode-only">
+        <span>
+          <b>Only mode</b>
+          <small>Show <em>only</em> the countries and languages you pick. Everything else
+            goes. For language immersion.</small>
+        </span>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2 id="countries-heading">Blocked countries</h2>
+      <p class="hint">
+        Matched against the country a creator declares on their channel. It is optional,
+        so many channels have none &mdash; those are shown unless you tick the box below.
+      </p>
+      <p class="hint hint--lead" id="country-lead"></p>
+      <div class="chips chips--toggle" id="country-breakdown"></div>
+      <input type="search" id="country-search" class="search" placeholder="Search countries&hellip;" autocomplete="off">
+      <div class="chips" id="country-chips"></div>
+      <div class="picker" id="country-list"></div>
+      <label class="switch" id="row-blockUnknownCountry">
+        <input type="checkbox" id="blockUnknownCountry">
+        <span>Also hide channels that declare no country</span>
+      </label>
+      <label class="switch" id="row-onlyShowUnknown">
+        <input type="checkbox" id="onlyShowUnknown">
+        <span>Also show items Beej cannot classify
+          <small>keeps videos with no detectable language and channels with no declared
+            country. Off means only-mode shows nothing it cannot positively confirm.</small></span>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2 id="languages-heading">Blocked languages</h2>
+      <p class="hint">
+        Detected on-device from the video title and channel name. Non-Latin scripts are
+        identified outright; Latin-script titles go through Chrome's language detector,
+        and anything it can't call confidently is left visible.
+      </p>
+      <p class="hint hint--lead" id="language-lead"></p>
+      <div class="chips chips--toggle" id="language-breakdown"></div>
+      <input type="search" id="language-search" class="search" placeholder="Search languages&hellip;" autocomplete="off">
+      <div class="chips" id="language-chips"></div>
+      <div class="picker" id="language-list"></div>
+      <label class="range">
+        <span>Detector confidence floor: <b id="threshold-value">70</b>%</span>
+        <input type="range" id="langThreshold" min="50" max="95" step="5">
+        <small>Lower catches more, and misfires more. 70 is a good default.</small>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Where to apply it</h2>
+      <label class="switch">
+        <input type="checkbox" id="hideTiles">
+        <span>Hide videos in feeds <small>home, search, sidebar, subscriptions</small></span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="blockWatch">
+        <span>Block the watch page <small>covers a blocked video opened directly</small></span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="blockChannel">
+        <span>Block channel pages <small>covers /@handle of a blocked channel</small></span>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Always block</h2>
+      <p class="hint">
+        Individual channels to hide regardless of country or language &mdash; for the ones that
+        slip through the rules. Fastest way to add one is to <b>right-click a channel
+        name on YouTube</b> and choose &ldquo;Block this YouTube channel&rdquo;, or right-click
+        the page while watching a video. One per line &mdash; a handle
+        (<code>@example</code>) or a channel id (<code>UCHnyf&hellip;</code>).
+      </p>
+      <textarea id="blocklist" rows="4" spellcheck="false" placeholder="@example"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>Always allow</h2>
+      <p class="hint">Channels here are never hidden, whatever the rules say. A channel cannot be in
+        both lists &mdash; adding it to one removes it from the other. One per line &mdash; a handle
+        (<code>@veritasium</code>) or a channel id (<code>UCHnyf&hellip;</code>).</p>
+      <textarea id="allowlist" rows="4" spellcheck="false" placeholder="@veritasium"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>Optional: YouTube Data API key</h2>
+      <p class="hint">
+        Not required. Beej reads the country straight from YouTube's own About page. A key
+        is only a fallback for channels where that fails &mdash; it costs 1 quota unit per lookup
+        against a 10,000/day allowance.
+      </p>
+      <div class="row">
+        <input type="password" id="apiKey" class="search" placeholder="AIza&hellip;" autocomplete="off">
+        <button id="test-key" class="btn">Test</button>
+      </div>
+      <p class="status" id="key-status"></p>
+    </section>
+
+    <section class="card">
+      <h2>What has been blocked</h2>
+      <p class="hint">
+        Videos Beej <b>actually hid</b>, newest first &mdash; by language, by country, and
+        by the channels you blocked by hand. Recorded as it happens, capped at the most
+        recent 400, and stored only on this machine. Nothing is recorded retroactively, so
+        this starts from the moment a rule is added.
+      </p>
+      <div class="row">
+        <select id="log-filter" class="search">
+          <option value="">All reasons</option>
+          <option value="language">Language</option>
+          <option value="country">Country</option>
+          <option value="manual">Blocked channel</option>
+        </select>
+        <input type="search" id="log-search" class="search" placeholder="Search titles or channels&hellip;" autocomplete="off">
+        <button id="clear-log" class="btn">Clear</button>
+      </div>
+      <p class="status" id="log-summary">&hellip;</p>
+      <p class="status" id="only-note" hidden></p>
+      <div class="table" id="log-table"></div>
+    </section>
+
+    <section class="card">
+      <h2>Channels Beej has seen</h2>
+      <p class="hint">
+        Every channel whose country has been looked up, and what your rules
+        <b>would do</b> the next time one of its videos appears. This is a prediction, not
+        a history &mdash; a channel can say &ldquo;would hide&rdquo; here and be absent from
+        <em>What has been blocked</em> above, because it was looked up before you added
+        the rule, or because no video of its has come past since.
+      </p>
+      <p class="hint">
+        Language is judged per video title rather than per channel, so it is not part of
+        the prediction here.
+      </p>
+      <div class="row">
+        <input type="search" id="channel-search" class="search" placeholder="Search channels&hellip;" autocomplete="off">
+        <label class="switch switch--inline">
+          <input type="checkbox" id="channel-blocked-only">
+          <span>Blocked only</span>
+        </label>
+      </div>
+      <p class="status" id="channel-summary">&hellip;</p>
+      <div class="table" id="channel-table"></div>
+    </section>
+
+    <section class="card">
+      <h2>Cache</h2>
+      <p class="hint">
+        Beej resolves each channel's declared country once and remembers it for 30 days,
+        so it never looks the same channel up twice. This counts how many channels it has
+        <em>seen</em>, not how many are blocked &mdash; the second number is how many of them
+        declare a country at all, since the field is optional.
+      </p>
+      <div class="row">
+        <span class="status" id="cache-status">&hellip;</span>
+        <button id="clear-cache" class="btn">Clear cache</button>
+      </div>
+    </section>
+  </main>
+
+  <p class="saved" id="saved" hidden>Saved</p>
+
+  <script src="../shared/data.js"></script>
+  <script src="../shared/util.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
