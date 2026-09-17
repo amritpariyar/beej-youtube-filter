@@ -126,11 +126,18 @@ than leaving it blank.
 Privacy policy URL - **this field is mandatory**. Paste exactly this:
 
 ```
-https://github.com/amritpariyar/beej-extension/blob/main/PRIVACY.md
+https://gist.github.com/amritpariyar/abb98194e4e84e6e71b0e26245b39e97
 ```
 
-It serves `PRIVACY.md` from the public repo, so editing the file and pushing updates the
-policy at the same URL.
+A public gist of `PRIVACY.md`, because the repo itself is private until the extension is
+live and the store will not accept a policy URL it cannot read. The two copies have to be
+kept in step by hand: after editing `PRIVACY.md`, run
+
+```bash
+gh gist edit abb98194e4e84e6e71b0e26245b39e97 PRIVACY.md
+```
+
+Once the repo goes public, this can move back to <https://github.com/amritpariyar/beej-extension/blob/main/PRIVACY.md>.
 
 ## Graphical assets
 
