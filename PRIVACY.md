@@ -67,4 +67,7 @@ empty the stores individually.
 
 ## Contact
 
-Questions about this policy can be raised on the project's issue tracker.
+Questions about this policy can be sent to info@beejtechnologies.com.np or
++977 9762565115.
+
+This policy is published at <https://beejtechnologies.com.np/privacy-policy/youtube-filter>.

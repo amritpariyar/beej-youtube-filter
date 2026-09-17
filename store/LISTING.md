@@ -126,18 +126,13 @@ than leaving it blank.
 Privacy policy URL - **this field is mandatory**. Paste exactly this:
 
 ```
-https://gist.github.com/amritpariyar/abb98194e4e84e6e71b0e26245b39e97
+https://beejtechnologies.com.np/privacy-policy/youtube-filter
 ```
 
-A public gist of `PRIVACY.md`, because the repo itself is private until the extension is
-live and the store will not accept a policy URL it cannot read. The two copies have to be
-kept in step by hand: after editing `PRIVACY.md`, run
-
-```bash
-gh gist edit abb98194e4e84e6e71b0e26245b39e97 PRIVACY.md
-```
-
-Once the repo goes public, this can move back to <https://github.com/amritpariyar/beej-extension/blob/main/PRIVACY.md>.
+It is a real page on the company site, prerendered to static HTML so a reviewer fetching it
+without JavaScript still gets the whole policy. It lives in the website repo at
+`website/src/components/LegalPrivacyYoutubeFilter.jsx`; edit `PRIVACY.md` here and that page
+together, because nothing keeps them in step.
 
 ## Graphical assets
 

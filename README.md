@@ -114,11 +114,11 @@ them, so they fail when behaviour drifts: `test_modes` covers both filtering mod
 `test_log` and `test_fullpage` the block record, `test_status` and `test_summary` the
 options predictions.
 
-The privacy policy is [`PRIVACY.md`](PRIVACY.md). The store's mandatory privacy-policy
-field needs a URL it can read anonymously, and this repo is private until the extension is
-live, so the published copy is a public gist: <https://gist.github.com/amritpariyar/abb98194e4e84e6e71b0e26245b39e97>.
-Edit the file here, then `gh gist edit abb98194e4e84e6e71b0e26245b39e97 PRIVACY.md` to
-republish it -- nothing keeps the two in step automatically.
+The privacy policy is [`PRIVACY.md`](PRIVACY.md), published at
+<https://beejtechnologies.com.np/privacy-policy/youtube-filter>, which is the URL
+the store's mandatory privacy-policy field wants. That page is a React route in the company
+website repo (`website/src/components/LegalPrivacyYoutubeFilter.jsx`), prerendered to static
+HTML; the two copies are kept in step by hand.
 
 `tools/pack.py` ships only `manifest.json` and `src/` — docs, store assets and build
 scripts stay out of the package. Store listing copy, permission justifications and the
