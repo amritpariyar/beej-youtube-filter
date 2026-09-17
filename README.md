@@ -114,6 +114,10 @@ them, so they fail when behaviour drifts: `test_modes` covers both filtering mod
 `test_log` and `test_fullpage` the block record, `test_status` and `test_summary` the
 options predictions.
 
+The privacy policy is [`PRIVACY.md`](PRIVACY.md), served publicly at
+<https://github.com/amritpariyar/beej-extension/blob/main/PRIVACY.md>, which is
+the URL the store's mandatory privacy-policy field wants.
+
 `tools/pack.py` ships only `manifest.json` and `src/` — docs, store assets and build
 scripts stay out of the package. Store listing copy, permission justifications and the
 submission checklist are in [`store/LISTING.md`](store/LISTING.md).

@@ -123,8 +123,14 @@ log records video titles, but it never leaves the device, which is not "collecti
 the policy (no transmission). If in doubt, say so plainly in the justification box rather
 than leaving it blank.
 
-Privacy policy URL: host `PRIVACY.md` somewhere public (a GitHub repo or Pages site is
-fine) and paste that URL. **This field is mandatory.**
+Privacy policy URL - **this field is mandatory**. Paste exactly this:
+
+```
+https://github.com/amritpariyar/beej-extension/blob/main/PRIVACY.md
+```
+
+It serves `PRIVACY.md` from the public repo, so editing the file and pushing updates the
+policy at the same URL.
 
 ## Graphical assets
 
@@ -154,7 +160,7 @@ the rest are settings.
 
 - [ ] Register as a developer: one-off 5 USD fee at the Developer Dashboard
 - [ ] `npm run pack` or the zip command in README; upload the zip, not the folder
-- [ ] Privacy policy hosted at a public URL and pasted into the form
+- [x] Privacy policy hosted at a public URL (paste it into the form)
 - [x] At least one real screenshot
 - [ ] Bump `version` in `manifest.json` for every resubmission - the store rejects a
       repeated version number
