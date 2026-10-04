@@ -5,7 +5,7 @@
   <title>Beej &mdash; Country, Language &amp; Channel Filter for YouTube</title>
   <link rel="stylesheet" href="options.css">
 </head>
-<body>
+<body class="booting">
   <header class="head">
     <h1>Beej <span class="h1-what">Country, Language &amp; Channel Filter for YouTube</span></h1>
     <p class="sub">Hide YouTube videos by the channel's declared country, by the language of the
@@ -35,7 +35,85 @@
     </div>
   </header>
 
+  <div class="gate" id="gate" hidden>
+    <form class="gate__box" id="gate-form" autocomplete="off">
+      <h2>Beej is locked</h2>
+      <p class="hint">Enter the PIN to change what Beej filters.</p>
+      <input type="password" id="gate-pin" class="search" placeholder="PIN" autocomplete="off">
+      <button class="btn btn--primary" id="gate-unlock">Unlock</button>
+      <p class="status err" id="gate-status"></p>
+      <button type="button" class="linkbtn" id="gate-forgot">Forgot the PIN?</button>
+      <div id="gate-recover" hidden>
+        <p class="hint">Enter the recovery code you were given when the lock was set up. It
+          turns the lock off, and you can then set a new PIN.</p>
+        <input type="text" id="gate-code" class="search" placeholder="XXXX-XXXX-XXXX"
+          autocomplete="off" spellcheck="false">
+        <button type="button" class="btn" id="gate-use-code">Turn the lock off</button>
+      </div>
+    </form>
+  </div>
+
   <main>
+    <section class="card" id="lock-card">
+      <h2>Parental lock <span class="badge">Pro</span></h2>
+      <p class="hint">
+        A PIN for this page. While the lock is on, nobody can turn filtering off, change the
+        rules or unblock a channel without it, and blocked videos lose their
+        &ldquo;Watch anyway&rdquo; button.
+      </p>
+
+      <div id="lock-pro" hidden>
+        <p class="hint">The parental lock is part of Beej Pro. Paste your licence key to
+          turn it on. The key is checked on this computer; nothing is sent anywhere.</p>
+        <textarea id="licence-key" rows="2" spellcheck="false" placeholder="BEEJ1.&hellip;"></textarea>
+        <div class="row row--end">
+          <a class="linkbtn" id="buy-link" target="_blank" rel="noopener" hidden>Get Beej Pro</a>
+          <button class="btn" id="licence-activate">Activate</button>
+        </div>
+        <p class="status" id="licence-status"></p>
+      </div>
+
+      <div id="lock-setup" hidden>
+        <p class="status" id="licence-owner"></p>
+        <div class="row">
+          <input type="password" id="pin-new" class="search" placeholder="New PIN" autocomplete="new-password">
+          <input type="password" id="pin-confirm" class="search" placeholder="Repeat it" autocomplete="new-password">
+          <button class="btn btn--primary" id="pin-set">Turn on lock</button>
+        </div>
+        <p class="status" id="pin-status"></p>
+      </div>
+
+      <div id="lock-recovery" hidden>
+        <p class="hint hint--lead"><b>Write this recovery code down.</b> It is the only way back
+          in if the PIN is forgotten, and it will not be shown again.</p>
+        <p class="recovery" id="recovery-code"></p>
+        <button class="btn btn--primary" id="recovery-done">I have saved it</button>
+      </div>
+
+      <div id="lock-on" hidden>
+        <p class="status">The lock is on. This page is unlocked until you lock it, close it, or
+          leave it idle for 10 minutes.</p>
+        <div class="row">
+          <button class="btn btn--primary" id="lock-now">Lock now</button>
+          <input type="password" id="pin-change" class="search" placeholder="New PIN" autocomplete="new-password">
+          <button class="btn" id="pin-change-btn">Change PIN</button>
+          <button class="btn" id="lock-off">Turn lock off</button>
+        </div>
+        <p class="status" id="lock-status"></p>
+      </div>
+
+      <p class="hint hint--small" id="lock-limits">
+        The lock protects Beej's settings. It cannot stop someone removing the extension
+        or opening a browser profile it is not installed in. For a child's own account,
+        Google Family Link can turn off incognito and limit extension changes.
+      </p>
+      <p class="status err" id="incognito-note" hidden>
+        Beej is not allowed in incognito windows, so those are unfiltered. To change that,
+        open chrome://extensions, click Details on Beej and turn on &ldquo;Allow in
+        Incognito&rdquo;.
+      </p>
+    </section>
+
     <section class="card">
       <h2 id="countries-heading">Blocked countries</h2>
       <p class="hint">
@@ -190,10 +268,16 @@
     </section>
   </main>
 
+  <footer class="foot" id="foot" hidden>
+    <a id="support-link" target="_blank" rel="noopener">Support Beej</a>
+  </footer>
+
   <p class="saved" id="saved" hidden>Saved</p>
 
   <script src="../shared/data.js"></script>
   <script src="../shared/util.js"></script>
+  <script src="../shared/lock.js"></script>
+  <script src="../shared/licence.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

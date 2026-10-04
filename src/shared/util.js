@@ -20,7 +20,9 @@ var BEEJ = (function () {
     blockUnknownCountry: false, // block mode: hide channels declaring no country
     onlyShowUnknown: false,     // only mode: keep items Beej cannot classify
     langThreshold: 70,          // CLD confidence floor, 0-100
-    apiKey: ''                  // optional YouTube Data API v3 key
+    apiKey: '',                 // optional YouTube Data API v3 key
+    licence: '',                // Beej Pro key, verified offline (licence.js)
+    lock: null                  // parental lock record (lock.js), null when off
   };
 
   /* Pre-mode names for the two selections. Read once, copied forward, removed. */

@@ -48,6 +48,13 @@ SEE WHAT IT IS DOING
 - A running record of what was hidden and why, with a one-click undo on each row.
 - An allow-list for channels that should never be filtered.
 
+BEEJ PRO (OPTIONAL, ONE-TIME PURCHASE)
+
+- Parental lock. A PIN for the settings page. While it is on, filtering cannot be switched
+  off, rules cannot be changed, and blocked videos lose their "Watch anyway" button.
+- Everything else above is free and stays free. A Pro licence key is checked on your own
+  machine; activating it sends nothing anywhere.
+
 PRIVACY
 
 There is no server, no account and no analytics. Your rules and caches stay in the browser.
@@ -70,9 +77,10 @@ Paste each into its box. Reviewers reject vague answers; each names the feature 
 
 **`storage`**
 ```
-Stores the user's filter rules (blocked countries, languages, channel lists) and a local
-cache of channel countries so the same channel is not looked up repeatedly. Local only;
-nothing is transmitted.
+Stores the user's filter rules (blocked countries, languages, channel lists), a local
+cache of channel countries so the same channel is not looked up repeatedly, and, if the
+user sets one, a salted hash of their parental-lock PIN. Local only; nothing is
+transmitted.
 ```
 
 **`contextMenus`**

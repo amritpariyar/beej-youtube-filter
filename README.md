@@ -99,6 +99,47 @@ The blocklist and the allowlist are mutually exclusive: adding a channel to one 
 from the other, so the two can never contradict each other. An explicit block is checked
 before language and country, since naming a channel outranks inferring things about it.
 
+## Beej Pro: the parental lock
+
+Everything above is free. Beej Pro adds a **parental lock**: a PIN that gates the options
+page. While it is on, filtering cannot be switched off, rules and channel lists cannot be
+edited, and the block card on a watch or channel page drops its "Watch anyway" button.
+Blocking a channel from the right-click menu still works, since that only makes the filter
+stricter.
+
+- **Unlocking** lasts for that page load. A reload, a closed tab or 10 idle minutes ask
+  for the PIN again.
+- **Wrong guesses** are free four times, then cost 30 s, doubling to a 15-minute cap. The
+  count is kept in `chrome.storage.local`, so reloading does not reset it.
+- **Recovery.** Setting the lock shows a one-time recovery code (`XXXX-XXXX-XXXX`). Entering
+  it on the locked page turns the lock off. Changing the PIN keeps the same code.
+- **Storage.** Only PBKDF2 hashes of the PIN and recovery code are kept, in
+  `chrome.storage.sync`, so the lock follows the Chrome profile to other machines.
+- **Limits.** The lock guards Beej's settings, not Chrome. It cannot stop someone removing
+  the extension, using a profile without it, or editing extension storage from DevTools.
+  The page says so, and warns when Beej is not allowed in incognito windows. For a child's
+  own account, Google Family Link covers what an extension cannot.
+
+### Licence keys
+
+A key is `BEEJ1.<payload>.<signature>`: a base64url JSON payload (`e` email, `t` tier,
+`d` issue date) signed with ECDSA P-256. `licence.js` carries only the public key, so
+checking a key is entirely offline, with no licence server and no network request. Any shop can
+sell Pro, as long as the buyer is sent a key afterwards.
+
+```
+node tools/licence.js init                 # once: make the key pair
+node tools/licence.js issue buyer@mail.com # print a key for one buyer
+node tools/licence.js check BEEJ1.....     # verify a key
+```
+
+`init` writes the private key to `private/licence-signing-key.pem` (git-ignored) and the
+public half into `licence.js`. **Back the private key up.** Every key in the field verifies
+against the public key that shipped, so a lost private key means no more keys that work.
+
+The "Get Beej Pro" and "Support Beej" links are the `LINKS` constant at the top of the
+parental-lock block in `options.js`; an empty string hides the link.
+
 ## Building and publishing
 
 ```bash
@@ -159,12 +200,15 @@ makes that class of bug impossible to reintroduce.
 manifest.json
 src/shared/data.js       ISO code lists, name aliases, Unicode script table
 src/shared/util.js       settings, cache, country-name resolver, About-page streamer
+src/shared/lock.js       parental-lock PIN and recovery code, wrong-guess back-off
+src/shared/licence.js    offline Beej Pro licence-key check
 src/content/lang.js      script heuristic + chrome.i18n detection
 src/content/extract.js   the only file that knows YouTube's DOM selectors
 src/content/enforce.js   hide a tile / show the full-page block card
 src/content/observer.js  orchestration, MutationObserver, SPA navigation
 src/background/worker.js cache, lookup de-duplication, context menus, Data API fallback
 src/options/             the settings UI
+tools/licence.js         issues licence keys (needs the signing key in private/)
 ```
 
 When YouTube changes its markup, `extract.js` breaks. When it changes its JSON, the
@@ -263,5 +307,5 @@ says.
 Blocked tiles are hidden with a `data-beej-reason` attribute naming the rule that caught
 them, so a misclassification is inspectable rather than invisible. The watch-page and
 channel-page cards both offer "Show anyway", which allows that channel for the rest of
-the browsing session. The options page has a durable allowlist for channels that should
+the browsing session, except under the parental lock, where the card is final. The options page has a durable allowlist for channels that should
 never be filtered.

@@ -1,6 +1,6 @@
 # Privacy Policy — Beej
 
-**Last updated:** 15 September 2026
+**Last updated:** 4 October 2026
 
 Beej filters what you see on YouTube. It does not have a server, an account, or an
 analytics endpoint. **No data leaves your computer.**
@@ -16,6 +16,8 @@ Everything is kept in Chrome's own extension storage on your machine.
 | Language tally — counts of languages seen, e.g. `en: 132` | `chrome.storage.local` | To show which languages are in your feed | **Clear cache** in options |
 | Block log — up to 400 recent entries: video title, channel, reason, timestamp | `chrome.storage.local` | So you can see what was hidden and undo mistakes | **Clear** in options |
 | YouTube Data API key, if you choose to add one | `chrome.storage.sync` | Optional fallback for country lookups | Clearing the field in options |
+| Beej Pro licence key, if you enter one — it contains the email address it was sold to | `chrome.storage.sync` | To unlock Pro features. The key is checked on your machine; it is never sent anywhere | Uninstalling |
+| Parental lock — a salted hash of the PIN and of the recovery code, never the PIN itself, plus a count of recent wrong attempts | `chrome.storage.sync` (hashes), `chrome.storage.local` (attempt count) | So the options page can check the PIN | **Turn lock off** in options |
 
 `chrome.storage.sync` is synchronised by Chrome across browsers you are signed into, under
 your own Google account, exactly as your bookmarks are. Beej neither controls nor can read

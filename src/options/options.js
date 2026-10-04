@@ -727,8 +727,222 @@
     refresh();
   }
 
+  /* ------------------------------------------------------ parental lock
+
+     The lock gates this page and nothing else: the content scripts only read
+     `settings.lock` to drop the "Watch anyway" button. Unlocking lasts for
+     this page load, so a reload, a closed tab or 10 idle minutes ask again. */
+
+  // Where "Get Beej Pro" and "Support Beej" point. Empty hides the link.
+  var LINKS = { buy: '', support: '' };
+  var IDLE_RELOCK_MS = 10 * 60 * 1000;
+
+  var unlocked = false;
+  var licensee = null;          // verified licence payload, or null
+  var pendingRecovery = null;   // shown once, right after the lock is created
+  var idleTimer = null;
+  var incognitoAllowed = true;
+
+  function isLocked() { return !!state.lock && !unlocked; }
+
+  function setStatus(id, text, isErr) {
+    var el = $(id);
+    el.textContent = text || '';
+    el.className = 'status' + (isErr ? ' err' : '');
+  }
+
+  function renderGate() {
+    // An unlock is for the lock that was entered. If it goes away (turned off
+    // in another tab, say), a lock set later must ask again.
+    if (!state.lock) unlocked = false;
+    var locked = isLocked();
+    var wasLocked = document.body.classList.contains('is-locked');
+    document.body.classList.toggle('is-locked', locked);
+    $('gate').hidden = !locked;
+    if (locked && !wasLocked) {
+      $('gate-pin').value = '';
+      $('gate-code').value = '';
+      $('gate-recover').hidden = true;
+      setStatus('gate-status', '', true);
+      $('gate-pin').focus();
+    }
+  }
+
+  function renderLockCard() {
+    $('lock-pro').hidden = !!(licensee || state.lock);
+    $('lock-setup').hidden = !licensee || !!state.lock;
+    $('lock-recovery').hidden = !pendingRecovery;
+    $('lock-on').hidden = !state.lock || !!pendingRecovery;
+    $('recovery-code').textContent = pendingRecovery || '';
+    $('licence-owner').textContent = licensee
+      ? 'Beej Pro, licensed to ' + licensee.e + '. Choose a PIN of at least '
+        + BEEJ_LOCK.MIN_PIN + ' characters.'
+      : '';
+    $('incognito-note').hidden = !state.lock || incognitoAllowed;
+  }
+
+  function armIdle() {
+    clearTimeout(idleTimer);
+    if (!state.lock || !unlocked) return;
+    idleTimer = setTimeout(relock, IDLE_RELOCK_MS);
+  }
+
+  function unlock() {
+    unlocked = true;
+    armIdle();
+    redrawAll();
+  }
+
+  function relock() {
+    clearTimeout(idleTimer);
+    unlocked = false;
+    pendingRecovery = null;   // never leave the code on screen for whoever sits down next
+    redrawAll();
+  }
+
+  function waitText(ms) {
+    var s = Math.ceil(ms / 1000);
+    return 'Too many wrong tries. Wait ' + (s >= 60 ? Math.ceil(s / 60) + ' min' : s + ' s') + '.';
+  }
+
+  /* One wrong-guess path for the PIN and the recovery code, so both share the
+     same back-off. */
+  function attempt(check, onSuccess) {
+    var buttons = [$('gate-unlock'), $('gate-use-code')];
+    BEEJ_LOCK.retryIn().then(function (ms) {
+      if (ms > 0) { setStatus('gate-status', waitText(ms), true); return; }
+      buttons.forEach(function (b) { b.disabled = true; });
+      return check().then(function (ok) {
+        buttons.forEach(function (b) { b.disabled = false; });
+        if (ok) {
+          setStatus('gate-status', '', true);
+          return BEEJ_LOCK.clearFailures().then(onSuccess);
+        }
+        return BEEJ_LOCK.recordFailure().then(function (wait) {
+          setStatus('gate-status', 'That is not it.' + (wait ? ' ' + waitText(wait) : ''), true);
+        });
+      });
+    });
+  }
+
+  function bindGate() {
+    $('gate-form').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      attempt(function () { return BEEJ_LOCK.checkPin(state.lock, $('gate-pin').value); }, unlock);
+    });
+    $('gate-forgot').addEventListener('click', function () {
+      $('gate-recover').hidden = false;
+      $('gate-code').focus();
+    });
+    $('gate-use-code').addEventListener('click', function () {
+      attempt(function () { return BEEJ_LOCK.checkRecovery(state.lock, $('gate-code').value); },
+        function () {
+          save({ lock: null });
+          unlock();
+          setStatus('pin-status', 'The lock is off. Set a new PIN to turn it back on.');
+        });
+    });
+  }
+
+  function bindLicence() {
+    if (LINKS.buy) {
+      $('buy-link').href = LINKS.buy;
+      $('buy-link').hidden = false;
+    }
+    $('licence-activate').addEventListener('click', function () {
+      var key = BEEJ_LICENCE.normalise($('licence-key').value);
+      if (!key) { setStatus('licence-status', 'Paste your licence key first.', true); return; }
+      BEEJ_LICENCE.verify(key).then(function (payload) {
+        if (!payload) {
+          setStatus('licence-status',
+            'That key is not valid. Check it was copied in full, from BEEJ1 to the end.', true);
+          return;
+        }
+        licensee = payload;
+        $('licence-key').value = '';
+        setStatus('licence-status', '');
+        save({ licence: key });
+        redrawAll();
+      });
+    });
+  }
+
+  function bindLockControls() {
+    $('pin-set').addEventListener('click', function () {
+      var pin = $('pin-new').value;
+      var problem = BEEJ_LOCK.pinProblem(pin);
+      if (!problem && pin !== $('pin-confirm').value) problem = 'The two PINs do not match.';
+      if (problem) { setStatus('pin-status', problem, true); return; }
+
+      BEEJ_LOCK.create(pin).then(function (r) {
+        $('pin-new').value = '';
+        $('pin-confirm').value = '';
+        setStatus('pin-status', '');
+        unlocked = true;            // whoever just set the PIN does not need to type it again
+        pendingRecovery = r.recoveryCode;
+        save({ lock: r.lock });
+        armIdle();
+        redrawAll();
+      });
+    });
+
+    $('recovery-done').addEventListener('click', function () {
+      pendingRecovery = null;
+      redrawAll();
+    });
+
+    $('lock-now').addEventListener('click', relock);
+
+    $('pin-change-btn').addEventListener('click', function () {
+      var pin = $('pin-change').value;
+      var problem = BEEJ_LOCK.pinProblem(pin);
+      if (problem) { setStatus('lock-status', problem, true); return; }
+      BEEJ_LOCK.changePin(state.lock, pin).then(function (lock) {
+        $('pin-change').value = '';
+        save({ lock: lock });
+        setStatus('lock-status', 'PIN changed. The recovery code is the same as before.');
+      });
+    });
+
+    $('lock-off').addEventListener('click', function () {
+      clearTimeout(idleTimer);
+      save({ lock: null });
+      setStatus('lock-status', '');
+      setStatus('pin-status', 'The lock is off.');
+      redrawAll();
+    });
+
+    ['pointerdown', 'keydown', 'input', 'scroll'].forEach(function (ev) {
+      document.addEventListener(ev, function () { if (unlocked) armIdle(); }, true);
+    });
+  }
+
+  function bindLock() {
+    bindGate();
+    bindLicence();
+    bindLockControls();
+
+    if (LINKS.support) {
+      $('support-link').href = LINKS.support;
+      $('foot').hidden = false;
+    }
+    if (chrome.extension && chrome.extension.isAllowedIncognitoAccess) {
+      chrome.extension.isAllowedIncognitoAccess(function (ok) {
+        incognitoAllowed = ok;
+        renderLockCard();
+      });
+    }
+
+    redraws.push(function () { renderGate(); renderLockCard(); });
+    renderGate();
+    renderLockCard();
+  }
+
   BEEJ.getSettings().then(function (s) {
     state = s;
+    return BEEJ_LICENCE.verify(s.licence).then(function (p) { licensee = p; });
+  }).then(function () {
+    bindLock();
     bindMode();
     bindToggles();
     bindThreshold();
@@ -759,5 +973,6 @@
     });
 
     renderRulesSummary();
+    document.body.classList.remove('booting');
   });
 })();

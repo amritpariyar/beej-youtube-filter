@@ -400,11 +400,15 @@
     if (stampChanged(key)) return;
     // A full-page block is a block like any other, and belongs in the record.
     if (info) logBlock(info, kind, detail);
+    // Under the parental lock the card is final: no "Watch anyway". Changing
+    // what gets through means unlocking the options page.
+    var locked = !!settings.lock;
     BEEJ_ENFORCE.showCard({
       title: isWatch ? 'This video is filtered' : 'This channel is filtered',
-      reason: 'Beej hid this because of your filter rules (' + reason + ').',
+      reason: 'Beej hid this because of your filter rules (' + reason + ').'
+        + (locked ? ' Settings are locked.' : ''),
       onAllowLabel: isWatch ? 'Watch anyway' : 'Show anyway',
-      onAllow: function () {
+      onAllow: locked ? null : function () {
         sessionAllow.add(key);
         lastFullPageKey = null;
         BEEJ_ENFORCE.showChannel(key);
@@ -466,6 +470,8 @@
       if (area !== 'sync') return;
       BEEJ.getSettings().then(function (s) {
         settings = s;
+        // "Show anyway" choices made before the lock went on do not survive it.
+        if (s.lock) sessionAllow.clear();
         reset();
         if (s.enabled) scan(document);
       });

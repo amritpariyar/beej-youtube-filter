@@ -290,3 +290,95 @@ textarea { resize: vertical; font-family: ui-monospace, "Cascadia Code", monospa
   font-size: 13px;
   margin: 0;
 }
+
+/* --- parental lock --- */
+
+/* Nothing renders until the settings (and so the lock state) are known, so a
+   locked page never flashes its rules before the gate goes up. */
+.booting .head, .booting main { visibility: hidden; }
+
+.is-locked .head > :not(h1):not(.sub), .is-locked main, .is-locked .foot { display: none; }
+
+.gate {
+  max-width: 720px;
+  margin: 24px auto 0;
+}
+
+.gate__box {
+  max-width: 380px;
+  margin: 0 auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gate__box h2 { margin: 0; font-size: 17px; }
+.gate__box .hint { margin: 0; }
+.gate__box .status { margin: 0; }
+.gate__box .status:empty { display: none; }
+
+.btn--primary {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.btn--primary:hover { opacity: 0.88; border-color: var(--fg); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+.linkbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.linkbtn:hover { color: var(--fg); }
+
+.badge {
+  display: inline-block;
+  vertical-align: 2px;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.row--end { justify-content: flex-end; margin-top: 8px; }
+.row + .status, #lock-card textarea + .row { margin-top: 8px; }
+#lock-card .row { flex-wrap: wrap; }
+
+.hint--small { font-size: 12px; margin: 14px 0 0; }
+
+.recovery {
+  margin: 4px 0 12px;
+  padding: 10px 14px;
+  border: 1px dashed var(--muted);
+  border-radius: 8px;
+  font: 600 20px/1.2 ui-monospace, "Cascadia Code", monospace;
+  letter-spacing: 0.08em;
+  text-align: center;
+  user-select: all;
+}
+
+.foot {
+  max-width: 720px;
+  margin: 8px auto 0;
+  text-align: center;
+  font-size: 13px;
+}
+
+.foot a { color: var(--muted); }
+.foot a:hover { color: var(--fg); }

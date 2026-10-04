@@ -4,3 +4,6 @@ beej-*.zip
 # personalised feed and the whole channel cache, so they stay local; the
 # composed 1280x800 shots in store/ are the ones that go public.
 store/source-capture-*.png
+
+# Signing keys and other maintainer-only material.
+/private/
