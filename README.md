@@ -231,7 +231,7 @@ parental-lock block in `options.js`; an empty string hides the link.
 ## Building and publishing
 
 ```bash
-sh tools/test/run.sh         # 11 suites, all reading the real source
+sh tools/test/run.sh         # 12 suites, all reading the real source
 python tools/preflight.py    # what Chrome validates: files, encoding, icons
 python tools/pack.py         # builds beej-<version>.zip for the Web Store
 python tools/make_icons.py   # regenerates the icon set (needs Pillow)
@@ -244,7 +244,7 @@ them, so they fail when behaviour drifts: `test_modes` covers both filtering mod
 `test_log` and `test_fullpage` the block record, `test_status` and `test_summary` the
 options predictions, `test_pending` the only-mode provisional hide, `test_lock` and
 `test_licence` the parental lock and key check, `test_video` how watch and Shorts pages
-are matched to a channel. They need only Node.
+are matched to a channel, `test_shelf` hiding a Shorts shelf once all its tiles are hidden. They need only Node.
 
 The user-guide images are made by `tools/screenshots.js`. It loads the unpacked extension
 into a throwaway Chromium profile, so no personal feed or history appears in them, steps
