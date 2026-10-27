@@ -12,12 +12,10 @@ FONT_SM = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 17)
 def panel(path, skip_top, crop_x=None):
     """Scale a full-page capture to the panel width, then take the top of it.
 
-    skip_top drops the YouTube masthead on the 'after' shot so both panels start
-    on the first row of tiles rather than on chrome. crop_x picks a column range out
-    of the source, which zooms that panel in: the 'before' capture lazy-loaded its
-    thumbnails, so everything below the first two rows is blank and has to stay
-    out of frame. It also decides which columns are on show, and the point of the
-    'before' is the mix -- Nepali and Hindi next to the French.
+    skip_top drops rows of the source from the top. crop_x picks a column range
+    out of it, which zooms the panel in; both captures are search results, so
+    cropping off the left-hand guide and the right margin leaves the results
+    themselves at a readable size.
     """
     im = Image.open(path).convert("RGB")
     if crop_x:
@@ -28,12 +26,16 @@ def panel(path, skip_top, crop_x=None):
     return im.crop((0, top, PANEL_W, min(top + PANEL_H, im.height)))
 
 
+# Both captures come from tools/screenshots.js at 1280px wide. The results
+# column runs from the end of the guide rail to the right margin.
+CROP_X = (88, 1264)
+
 canvas = Image.new("RGB", (W, H), "#ffffff")
 d = ImageDraw.Draw(canvas)
 
 shots = [
-    (0, "store/source-capture-feed-before.png", 0, (734, 1896), "Before", "Home feed, unfiltered", "#606060"),
-    (PANEL_W + GUTTER, "store/source-capture-feed-after.png", 120, None, "After", "Only mode: France + French", "#c00000"),
+    (0, "store/source-capture-feed-before.png", 0, CROP_X, "Before", 'Search "Paris food", unfiltered', "#606060"),
+    (PANEL_W + GUTTER, "store/source-capture-feed-after.png", 0, CROP_X, "After", "Only mode: France + French", "#c00000"),
 ]
 
 for x, path, skip, crop, label, sub, colour in shots:

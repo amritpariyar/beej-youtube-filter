@@ -54,16 +54,35 @@ async function openOptions(context, id) {
   return page;
 }
 
-/* The store's "Channels Beej has seen" shot. The table is filled by real
-   lookups, from browsing a few searches with the country rules on, so every
-   channel and country in it is what YouTube actually reports. The page is
-   zoomed to 125% to match the other store shots at 1280x800. */
-const SEARCHES = ['science documentary', 'street food', 'travel vlog', 'piano tutorial'];
+/* The store's "What has been blocked" and "Channels Beej has seen" shots.
+   Both are filled by real lookups, from browsing a few searches with the
+   rules on, so every title, channel and country in them is what YouTube
+   actually reports. The page is zoomed to 125% to match the other store shots
+   at 1280x800. The Spanish and Portuguese searches give the language rules
+   something to catch. */
+const STORE = path.join(ROOT, 'store');
+const SEARCHES = ['science documentary', 'street food', 'travel vlog', 'piano tutorial',
+  'receta fácil', 'música brasileira'];
 
-async function shootChannelTable(context, id) {
+// videosOnly applies YouTube's "Videos" filter, which drops the Shorts shelves.
+function searchUrl(q, videosOnly) {
+  return 'https://www.youtube.com/results?' + (videosOnly ? 'sp=EgIQAQ%253D%253D&' : '') +
+    'search_query=' + encodeURIComponent(q);
+}
+
+async function shootOptionsCard(page, cardChildId, name) {
+  await page.evaluate((cid) => {
+    document.body.style.zoom = '1.25';
+    document.getElementById(cid).closest('.card').scrollIntoView();
+  }, cardChildId);
+  await page.waitForTimeout(500);
+  await shoot(page, name, STORE);
+}
+
+async function shootStoreTables(context, id) {
   const yt = await context.newPage();
   for (const q of SEARCHES) {
-    await yt.goto('https://www.youtube.com/results?search_query=' + encodeURIComponent(q));
+    await yt.goto(searchUrl(q), { waitUntil: 'domcontentloaded' });
     await yt.waitForTimeout(4000);
     await yt.mouse.wheel(0, 3000);
     await yt.waitForTimeout(4000);
@@ -73,13 +92,37 @@ async function shootChannelTable(context, id) {
   const page = await openOptions(context, id);
   await page.waitForFunction(() => /channels? known/.test(
     document.getElementById('channel-summary').textContent), null, { timeout: 30000 });
-  await page.evaluate(() => {
-    document.body.style.zoom = '1.25';
-    document.getElementById('channel-table').closest('.card').scrollIntoView();
-  });
-  await page.waitForTimeout(500);
-  await shoot(page, 'screenshot-4-channels', path.join(ROOT, 'store'));
+  await page.waitForFunction(() => /\d+ hidden/.test(
+    document.getElementById('log-summary').textContent), null, { timeout: 30000 });
+  await shootOptionsCard(page, 'log-table', 'screenshot-3-blocked');
+  await shootOptionsCard(page, 'channel-table', 'screenshot-4-channels');
   await page.close();
+}
+
+/* The store's before/after shot: one search, unfiltered and then in only
+   mode for France and French. A fresh profile has no home feed, so a search
+   stands in for it; what survives is French-language videos and channels
+   that declare France. tools/compose_store_shot.py puts the two side by side. */
+const FEED_QUERY = 'Paris food';
+const IMMERSION = { mode: 'only', countries: ['FR'], languages: ['fr'],
+  blocklist: [], allowlist: [] };
+
+async function captureFeed(context, name) {
+  const yt = await context.newPage();
+  await yt.setViewportSize({ width: 1280, height: 1600 });
+  await yt.goto(searchUrl(FEED_QUERY, true), { waitUntil: 'domcontentloaded' });
+  await yt.waitForTimeout(9000);
+  await shoot(yt, name, STORE);
+  await yt.close();
+}
+
+async function shootFeedBeforeAfter(context, options) {
+  const set = (patch) => options.evaluate((p) => new Promise((r) => chrome.storage.sync.set(p, r)), patch);
+  await set({ enabled: false });
+  await captureFeed(context, 'source-capture-feed-before');
+  await set(Object.assign({ enabled: true }, IMMERSION));
+  await captureFeed(context, 'source-capture-feed-after');
+  await set(RULES);
 }
 
 async function main() {
@@ -107,7 +150,8 @@ async function main() {
     const card = page.locator('#lock-card');
     await shoot(card, 'lock-pro');
 
-    await shootChannelTable(context, id);
+    await shootStoreTables(context, id);
+    await shootFeedBeforeAfter(context, page);
 
     const key = demoKey();
     if (!key) {
