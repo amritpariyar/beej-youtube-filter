@@ -15,8 +15,10 @@ Otherwise, open an issue with:
 - your Chrome version and Beej version (from `chrome://extensions`)
 - your mode and rules, roughly ("only mode, Nepali")
 
-For a tile hidden by mistake, right-click it and choose **Inspect**. The hidden element
-carries a `data-beej-reason` attribute that names the rule that caught it. Include that.
+For a video hidden by mistake, find it under **What has been blocked** in Beej's options
+and include the reason shown there. Developers can also find hidden tiles in DevTools with
+`document.querySelectorAll('[data-beej-reason]')`; the attribute names the rule that
+caught each one.
 
 YouTube changes its markup often. "Beej stopped hiding X" is usually a selector in
 `src/content/extract.js` that no longer matches, and a saved copy of the page's HTML

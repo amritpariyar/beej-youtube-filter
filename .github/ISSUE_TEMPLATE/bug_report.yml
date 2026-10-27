@@ -68,8 +68,8 @@ body:
   - type: input
     id: reason
     attributes:
-      label: data-beej-reason (if something was hidden by mistake)
-      description: Right-click the gap where the video was, choose Inspect, and copy the data-beej-reason value from the highlighted element.
+      label: Reason Beej gave (if something was hidden by mistake)
+      description: Open Beej's options, find the video under "What has been blocked" and copy the reason shown next to it.
       placeholder: "language: Hindi"
     validations:
       required: false
