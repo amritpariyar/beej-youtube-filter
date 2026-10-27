@@ -9,7 +9,7 @@ body:
         channel is usually what makes a bug fixable.
 
         Found a way past the parental lock? Please report it privately instead; see
-        [SECURITY.md](https://github.com/amritpariyar/beej-extension/blob/main/SECURITY.md).
+        [SECURITY.md](https://github.com/amritpariyar/beej-youtube-filter/blob/main/SECURITY.md).
 
   - type: dropdown
     id: page

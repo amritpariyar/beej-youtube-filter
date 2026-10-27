@@ -285,7 +285,7 @@ hand from the Actions tab with the tag.
 ### From a release
 
 1. Download `beej-<version>.zip` from the latest release on the
-   [Releases page](https://github.com/amritpariyar/beej-extension/releases/latest).
+   [Releases page](https://github.com/amritpariyar/beej-youtube-filter/releases/latest).
 2. Unzip it into a folder you will keep. Chrome loads the extension from that folder, so
    deleting or moving it removes Beej.
 3. Open `chrome://extensions`, turn on **Developer mode** (top right), click **Load
