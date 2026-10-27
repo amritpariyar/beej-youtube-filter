@@ -18,12 +18,29 @@ var BEEJ_ENFORCE = (function () {
     tile.classList.remove(PENDING, PROVISIONAL);
     tile.setAttribute('data-beej-reason', reason);
     if (channelKey) tile.setAttribute('data-beej-channel', channelKey);
+    syncShelf(tile);
   }
 
   function show(tile) {
     tile.classList.remove(HIDDEN, PENDING, PROVISIONAL);
     tile.removeAttribute('data-beej-reason');
     tile.removeAttribute('data-beej-channel');
+    syncShelf(tile);
+  }
+
+  /* A shelf whose tiles are all hidden would leave its heading standing over
+     nothing, so it is hidden with them, and shown again the moment any of its
+     tiles is. */
+  function syncShelf(tile) {
+    var shelf = BEEJ_EXTRACT.shelfFor(tile);
+    if (!shelf) return;
+    var tiles = BEEJ_EXTRACT.tiles(shelf);
+    var empty = tiles.length > 0;
+    for (var i = 0; i < tiles.length && empty; i++) {
+      if (!tiles[i].classList.contains(HIDDEN)) empty = false;
+    }
+    if (empty) shelf.classList.add(HIDDEN);
+    else shelf.classList.remove(HIDDEN);
   }
 
   /* Reveal only the tiles belonging to one channel, so "Show anyway" on a block
@@ -45,7 +62,10 @@ var BEEJ_ENFORCE = (function () {
      too, so it is left alone. */
   function release(tile) {
     tile.classList.remove(PENDING);
-    if (tile.classList.contains(PROVISIONAL)) tile.classList.remove(PROVISIONAL, HIDDEN);
+    if (tile.classList.contains(PROVISIONAL)) {
+      tile.classList.remove(PROVISIONAL, HIDDEN);
+      syncShelf(tile);
+    }
   }
 
   /* Only-mode's default-deny while a verdict is outstanding: hide it, but mark
@@ -53,6 +73,7 @@ var BEEJ_ENFORCE = (function () {
   function holdHidden(tile) {
     tile.classList.remove(PENDING);
     tile.classList.add(HIDDEN, PROVISIONAL);
+    syncShelf(tile);
   }
 
   /* Undo every effect this extension has had on the document. Used when the

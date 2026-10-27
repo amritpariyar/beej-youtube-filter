@@ -23,6 +23,17 @@ var BEEJ_EXTRACT = (function () {
 
   var TILE_SELECTOR = TILE_TAGS.join(',');
 
+  /* Rows of tiles that carry their own heading, such as "Shorts". Once every
+     tile in one is hidden the heading is all that is left, so the row goes
+     too. */
+  var SHELF_TAGS = [
+    'grid-shelf-view-model',         // shorts shelf in search results
+    'ytd-rich-shelf-renderer',       // shorts shelf on home and subscriptions
+    'ytd-reel-shelf-renderer'        // shorts shelf (legacy)
+  ];
+
+  var SHELF_SELECTOR = SHELF_TAGS.join(',');
+
   var TITLE_SELECTORS = [
     '#video-title',
     'a#video-title-link',
@@ -70,6 +81,12 @@ var BEEJ_EXTRACT = (function () {
   function tileFor(node) {
     if (!node || !node.closest) return null;
     return node.closest(TILE_SELECTOR);
+  }
+
+  /* The shelf a tile sits in, or null for a tile in an ordinary feed. */
+  function shelfFor(tile) {
+    if (!tile || !tile.parentElement) return null;
+    return tile.parentElement.closest(SHELF_SELECTOR);
   }
 
   function describe(tile) {
@@ -139,6 +156,7 @@ var BEEJ_EXTRACT = (function () {
     watchPageChannelKey: watchPageChannelKey,
     watchPageTitle: watchPageTitle,
     pageChannelKey: pageChannelKey,
+    shelfFor: shelfFor,
     isWatchPage: isWatchPage,
     isShortsPage: isShortsPage,
     currentVideoId: currentVideoId,

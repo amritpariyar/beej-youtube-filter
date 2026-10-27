@@ -7,10 +7,11 @@ const ROOT = require('path').resolve(__dirname, '../..') + '/';
 const fs = require('fs');
 
 const src = fs.readFileSync(ROOT + 'src/content/enforce.js', 'utf8');
-const ENFORCE = new Function('document', src + '\nreturn BEEJ_ENFORCE;')({
+// These tiles sit in no shelf; test_shelf covers the ones that do.
+const ENFORCE = new Function('document', 'BEEJ_EXTRACT', src + '\nreturn BEEJ_ENFORCE;')({
   getElementById: () => null,
   querySelectorAll: () => []
-});
+}, { shelfFor: () => null });
 
 function tile() {
   const set = new Set();
