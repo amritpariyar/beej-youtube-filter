@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a way past the parental lock, privately
+    url: https://github.com/amritpariyar/beej-extension/blob/main/SECURITY.md
+    about: Ways around the lock are fixed before they are made public. Email them instead of opening an issue.
+  - name: User guide
+    url: https://github.com/amritpariyar/beej-extension#user-guide
+    about: How to set up rules, block channels and turn on the parental lock.
+  - name: Known limits
+    url: https://github.com/amritpariyar/beej-extension#known-limits
+    about: Things Beej cannot filter yet, and why. Worth a look before reporting a missed video.

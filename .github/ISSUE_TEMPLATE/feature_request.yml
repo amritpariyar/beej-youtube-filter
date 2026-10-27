@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest something Beej should filter, or a change to how it works.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: want
+    attributes:
+      label: What would you like Beej to do?
+      placeholder: Hide all Shorts, whatever channel or language they are.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why? What are you trying to get out of YouTube?
+      description: The situation behind the request helps more than a specific design.
+      placeholder: My child watches on a shared laptop and Shorts are where most of the time goes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: Anything you have tried already?
+      description: Rules, other extensions, YouTube's own settings.
+    validations:
+      required: false

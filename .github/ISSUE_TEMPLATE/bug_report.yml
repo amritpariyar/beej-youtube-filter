@@ -1,0 +1,93 @@
+name: Bug report
+description: Beej hid something it should not have, missed something it should have hidden, or broke a page.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. YouTube changes its pages often, so a link to the exact video or
+        channel is usually what makes a bug fixable.
+
+        Found a way past the parental lock? Please report it privately instead; see
+        [SECURITY.md](https://github.com/amritpariyar/beej-extension/blob/main/SECURITY.md).
+
+  - type: dropdown
+    id: page
+    attributes:
+      label: Where on YouTube?
+      options:
+        - Home feed
+        - Search results
+        - Subscriptions
+        - Watch page (a video)
+        - Watch-page sidebar
+        - Shorts player
+        - Shorts in a feed
+        - Channel page
+        - Options page
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: input
+    id: link
+    attributes:
+      label: Link to the video or channel
+      placeholder: https://www.youtube.com/watch?v=...
+    validations:
+      required: false
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      placeholder: |
+        A Hindi video stayed visible on the home feed although Hindi is blocked.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - Block mode
+        - Only mode
+    validations:
+      required: true
+
+  - type: textarea
+    id: rules
+    attributes:
+      label: Your rules, roughly
+      description: Countries and languages picked, any channels blocked or allowed, and whether the parental lock is on.
+      placeholder: Blocking India and Hindi; @example blocked by hand; lock on.
+    validations:
+      required: false
+
+  - type: input
+    id: reason
+    attributes:
+      label: data-beej-reason (if something was hidden by mistake)
+      description: Right-click the gap where the video was, choose Inspect, and copy the data-beej-reason value from the highlighted element.
+      placeholder: "language: Hindi"
+    validations:
+      required: false
+
+  - type: input
+    id: beej-version
+    attributes:
+      label: Beej version
+      description: Shown on Beej's card in chrome://extensions.
+      placeholder: 0.4.1
+    validations:
+      required: true
+
+  - type: input
+    id: chrome-version
+    attributes:
+      label: Chrome version
+      description: From chrome://version, the first line.
+      placeholder: 141.0.7390.54
+    validations:
+      required: true

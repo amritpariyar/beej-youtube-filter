@@ -4,7 +4,10 @@ Thanks for helping. Bug reports, fixes, new filters and better docs are all welc
 
 ## Reporting a bug
 
-Open an issue with:
+Found a way past the parental lock? Report it privately, as [SECURITY.md](SECURITY.md)
+describes, rather than in a public issue.
+
+Otherwise, open an issue with:
 
 - what you expected and what happened instead
 - the YouTube page (home, search, watch, channel, Shorts) and, if you can, a video or
