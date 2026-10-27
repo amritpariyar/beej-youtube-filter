@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* Screenshots for the user guide in docs/images/.
+/* Screenshots for the user guide in docs/images/, plus the store's
+   store/screenshot-4-channels.png.
 
      npm install && npx playwright install chromium
      npm run screenshots
@@ -39,8 +40,8 @@ function demoKey() {
     { encoding: 'utf8' }).trim();
 }
 
-async function shoot(target, name) {
-  const file = path.join(OUT, name + '.png');
+async function shoot(target, name, dir) {
+  const file = path.join(dir || OUT, name + '.png');
   await target.screenshot({ path: file, animations: 'disabled' });
   console.log('wrote', path.relative(ROOT, file));
 }
@@ -51,6 +52,34 @@ async function openOptions(context, id) {
   await page.goto('chrome-extension://' + id + '/src/options/options.html');
   await page.waitForSelector('body:not(.booting)');
   return page;
+}
+
+/* The store's "Channels Beej has seen" shot. The table is filled by real
+   lookups, from browsing a few searches with the country rules on, so every
+   channel and country in it is what YouTube actually reports. The page is
+   zoomed to 125% to match the other store shots at 1280x800. */
+const SEARCHES = ['science documentary', 'street food', 'travel vlog', 'piano tutorial'];
+
+async function shootChannelTable(context, id) {
+  const yt = await context.newPage();
+  for (const q of SEARCHES) {
+    await yt.goto('https://www.youtube.com/results?search_query=' + encodeURIComponent(q));
+    await yt.waitForTimeout(4000);
+    await yt.mouse.wheel(0, 3000);
+    await yt.waitForTimeout(4000);
+  }
+  await yt.close();
+
+  const page = await openOptions(context, id);
+  await page.waitForFunction(() => /channels? known/.test(
+    document.getElementById('channel-summary').textContent), null, { timeout: 30000 });
+  await page.evaluate(() => {
+    document.body.style.zoom = '1.25';
+    document.getElementById('channel-table').closest('.card').scrollIntoView();
+  });
+  await page.waitForTimeout(500);
+  await shoot(page, 'screenshot-4-channels', path.join(ROOT, 'store'));
+  await page.close();
 }
 
 async function main() {
@@ -77,6 +106,8 @@ async function main() {
 
     const card = page.locator('#lock-card');
     await shoot(card, 'lock-pro');
+
+    await shootChannelTable(context, id);
 
     const key = demoKey();
     if (!key) {
