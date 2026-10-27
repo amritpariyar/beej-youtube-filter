@@ -7,3 +7,6 @@ store/source-capture-*.png
 
 # Signing keys and other maintainer-only material.
 /private/
+
+# Dev tooling.
+node_modules/

@@ -4,6 +4,77 @@ A Chrome (Manifest V3) extension that hides YouTube videos based on **the countr
 channel declares**, **the language of the content**, and **individual channels you pick
 by hand**. The first two are what the existing blockers don't do.
 
+Beej is open source under the [MIT licence](LICENSE). Contributions are welcome; see
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
+## User guide
+
+### 1. Install and open the options page
+
+Load the extension (see [Install](#install)). The options page opens on first install;
+afterwards, click the Beej icon in the toolbar or right-click it and choose **Options**.
+
+![The options page with rules set](docs/images/options-overview.png)
+
+The line under **Filtering enabled** sums up what is active. If it says nothing is set,
+nothing will be hidden.
+
+### 2. Pick a mode, then countries and languages
+
+**Block mode** hides what you pick; **Only mode** shows nothing else (see
+[Two modes](#two-modes)). Each picker has a row of chips above it listing what Beej has
+actually seen in your feed, with counts. Click a chip to add or remove it, or search the
+full list underneath.
+
+![Language chips and picker](store/screenshot-2-languages.png)
+
+Changes save as you make them and apply to open YouTube tabs straight away.
+
+![A home feed before and after, in only mode](store/screenshot-5-feed-before-after.png)
+
+### 3. Block or allow single channels
+
+Right-click a channel name on YouTube and choose **Block this YouTube channel**, or
+right-click anywhere on a watch or channel page and choose **Block the channel on this
+page**. To undo, remove the channel from **Always block** in options, or add it to
+**Always allow**, which overrides every rule.
+
+### 4. Check what was hidden
+
+**What has been blocked** lists every video Beej hid and why. Each row has **Allow
+channel** to fix a wrong call. **Channels Beej has seen** shows what your rules would do
+to each channel looked up so far. See [Seeing what got blocked](#seeing-what-got-blocked).
+
+### 5. Turn on the parental lock (Pro)
+
+Paste a licence key into the **Parental lock** card and click **Activate**.
+
+![The parental lock card before activation](docs/images/lock-pro.png)
+
+Choose a PIN of at least four characters and click **Turn on lock**.
+
+![Choosing a PIN](docs/images/lock-setup.png)
+
+Beej shows a recovery code once. Write it down: it is the only way back in if the PIN is
+forgotten.
+
+![The one-time recovery code](docs/images/lock-recovery.png)
+
+While you are on the page it stays unlocked, so you can finish changing rules. **Lock
+now**, closing the tab or 10 idle minutes locks it again.
+
+![The lock is on](docs/images/lock-on.png)
+
+From then on the options page asks for the PIN, and **Forgot the PIN?** takes the
+recovery code instead.
+
+![The locked options page](docs/images/lock-gate.png)
+
+On YouTube, a blocked video or channel shows a card with only **Go back**. The "Watch
+anyway" button is gone until the lock is turned off.
+
+![A blocked video while the lock is on](docs/images/block-watch-locked.png)
+
 ## Two modes
 
 The same engine reads the same two lists; only the sense of the test changes.
@@ -120,6 +191,10 @@ stricter.
   The page says so, and warns when Beej is not allowed in incognito windows. For a child's
   own account, Google Family Link covers what an extension cannot.
 
+Because Beej is open source, the licence check runs in code anyone can read and change; a
+self-built copy can have it removed. That is accepted. Buying Pro from the store build is
+how you pay for the convenience and support the project.
+
 ### Licence keys
 
 A key is `BEEJ1.<payload>.<signature>`: a base64url JSON payload (`e` email, `t` tier,
@@ -143,17 +218,26 @@ parental-lock block in `options.js`; an empty string hides the link.
 ## Building and publishing
 
 ```bash
-sh tools/test/run.sh         # 7 suites, all reading the real source
+sh tools/test/run.sh         # 10 suites, all reading the real source
 python tools/preflight.py    # what Chrome validates: files, encoding, icons
 python tools/pack.py         # builds beej-<version>.zip for the Web Store
 python tools/make_icons.py   # regenerates the icon set (needs Pillow)
+npm run screenshots          # regenerates docs/images (needs Playwright, see below)
 ```
 
 The tests deliberately extract and run the shipped functions rather than reimplementing
 them, so they fail when behaviour drifts: `test_modes` covers both filtering modes,
 `test_migrate` the settings rename, `test_narrow` the script-to-language narrowing,
 `test_log` and `test_fullpage` the block record, `test_status` and `test_summary` the
-options predictions.
+options predictions, `test_pending` the only-mode provisional hide, `test_lock` and
+`test_licence` the parental lock and key check. They need only Node.
+
+The user-guide images are made by `tools/screenshots.js`. It loads the unpacked extension
+into a throwaway Chromium profile, so no personal feed or history appears in them, steps
+the real options page through each state, and finishes on live YouTube. It is the only
+thing that needs `npm install` and `npx playwright install chromium`. The lock shots need
+a working licence key, from `BEEJ_DEMO_KEY` or the signing key in `private/`; without one
+they are skipped.
 
 The privacy policy is [`PRIVACY.md`](PRIVACY.md), published at
 <https://beejtechnologies.com.np/privacy-policy/youtube-filter>, which is the URL
@@ -209,6 +293,9 @@ src/content/observer.js  orchestration, MutationObserver, SPA navigation
 src/background/worker.js cache, lookup de-duplication, context menus, Data API fallback
 src/options/             the settings UI
 tools/licence.js         issues licence keys (needs the signing key in private/)
+tools/screenshots.js     regenerates the user-guide images in docs/images/
+tools/test/              the test suites
+store/                   Web Store listing copy and images
 ```
 
 When YouTube changes its markup, `extract.js` breaks. When it changes its JSON, the
@@ -283,6 +370,13 @@ says.
   sampled search page, 30 of 59 tiles were shorts and none exposed a channel. With no
   channel to resolve, there is no country to check, so country rules do not apply to
   them.
+- **Collaboration videos are not filtered on the watch page.** When a video lists several
+  owners ("YouTube and Haley Pham"), the owner block uses different markup and
+  `watchPageChannelKey()` in `extract.js` finds no channel, so neither channel nor country
+  rules apply and the video plays, parental lock or not.
+- **Shorts on the Shorts player are largely unfiltered.** On `/shorts/` the watch-page
+  selectors find no channel, or a stale one from a hidden watch page, so a Short can play
+  under a rule that should block it.
 - **The watch-page sidebar cannot be country-filtered.** Its tiles
   (`yt-lockup-view-model` under `#related`) render the channel as plain text with no
   anchor and expose no channel id on the element, so there is no key to resolve. Verified
@@ -309,3 +403,14 @@ them, so a misclassification is inspectable rather than invisible. The watch-pag
 channel-page cards both offer "Show anyway", which allows that channel for the rest of
 the browsing session, except under the parental lock, where the card is final. The options page has a durable allowlist for channels that should
 never be filtered.
+
+## Contributing
+
+Bug reports, fixes and new filters are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers
+setup, tests and the few rules the code relies on. The two gaps under
+[Known limits](#known-limits), collaboration videos and the Shorts player, are good
+places to start.
+
+## Licence
+
+[MIT](LICENSE).
