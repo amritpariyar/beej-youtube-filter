@@ -71,9 +71,14 @@ var BEEJ_ENFORCE = (function () {
 
   /* --- full-page block card -------------------------------------------- */
 
+  /* Every video, not the first: the Shorts player keeps more than one, and a
+     watch page visited earlier can leave its player behind in the DOM. Under
+     the card nothing should be playing. */
   function pauseVideo() {
-    var v = document.querySelector('video');
-    if (v && !v.paused) { try { v.pause(); } catch (e) { /* ignore */ } }
+    var vs = document.querySelectorAll('video');
+    for (var i = 0; i < vs.length; i++) {
+      if (!vs[i].paused) { try { vs[i].pause(); } catch (e) { /* ignore */ } }
+    }
   }
 
   function removeCard() {

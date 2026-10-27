@@ -109,7 +109,22 @@ var BEEJ_EXTRACT = (function () {
   }
 
   function isWatchPage() {
-    return location.pathname === '/watch' || location.pathname.indexOf('/shorts/') === 0;
+    return location.pathname === '/watch' || isShortsPage();
+  }
+
+  function isShortsPage() {
+    return location.pathname.indexOf('/shorts/') === 0;
+  }
+
+  /* The video id from the URL, for /watch?v=... and /shorts/<id>. The URL is
+     the one thing that is never stale: YouTube keeps the previous video's
+     player in the DOM after navigating, and its owner links with it. */
+  function currentVideoId() {
+    var m = location.pathname.match(/^\/shorts\/([0-9A-Za-z_-]{11})/);
+    if (m) return m[1];
+    if (location.pathname !== '/watch') return null;
+    var v = new URLSearchParams(location.search).get('v');
+    return v && /^[0-9A-Za-z_-]{11}$/.test(v) ? v : null;
   }
 
   function isChannelPage() {
@@ -125,6 +140,8 @@ var BEEJ_EXTRACT = (function () {
     watchPageTitle: watchPageTitle,
     pageChannelKey: pageChannelKey,
     isWatchPage: isWatchPage,
+    isShortsPage: isShortsPage,
+    currentVideoId: currentVideoId,
     isChannelPage: isChannelPage
   };
 })();

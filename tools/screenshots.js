@@ -27,7 +27,7 @@ const RULES = {
   mode: 'block',
   countries: ['US', 'GB'],
   languages: ['es', 'pt'],
-  blocklist: ['@youtube', '@nasa'],   // stored lowercased, as the options page saves them
+  blocklist: ['@youtube'],   // stored lowercased, as the options page saves them
   allowlist: ['@veritasium']
 };
 
@@ -111,24 +111,13 @@ async function main() {
     await yt.waitForSelector('#beej-block-card', { timeout: 30000 });
     await yt.waitForTimeout(1500);
     await shoot(yt, 'block-channel-locked');
-    // Collaboration videos name several owners and are not matched to a
-    // channel yet, so take a solo channel and try its uploads until one gets
-    // the card.
-    await yt.goto('https://www.youtube.com/@NASA/videos');
+
+    const href = await yt.locator('a[href^="/watch"]').first()
+      .getAttribute('href', { timeout: 30000 });
+    await yt.goto('https://www.youtube.com' + href.split('&')[0]);
     await yt.waitForSelector('#beej-block-card', { timeout: 30000 });
-    const hrefs = [...new Set(await yt.$$eval('a[href^="/watch"]',
-      (as) => as.map((a) => a.getAttribute('href').split('&')[0])))].slice(0, 6);
-    for (const href of hrefs) {
-      await yt.goto('https://www.youtube.com' + href);
-      try {
-        await yt.waitForSelector('#beej-block-card', { timeout: 15000 });
-      } catch (e) {
-        continue;
-      }
-      await yt.waitForTimeout(1500);
-      await shoot(yt, 'block-watch-locked');
-      break;
-    }
+    await yt.waitForTimeout(1500);
+    await shoot(yt, 'block-watch-locked');
   } finally {
     await context.close();
     fs.rmSync(profile, { recursive: true, force: true });

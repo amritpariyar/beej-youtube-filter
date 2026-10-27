@@ -1,6 +1,6 @@
 # Privacy Policy — Beej
 
-**Last updated:** 4 October 2026
+**Last updated:** 27 October 2026
 
 Beej filters what you see on YouTube. It does not have a server, an account, or an
 analytics endpoint. **No data leaves your computer.**
@@ -30,13 +30,17 @@ and has its own Clear button.
 
 ## What Beej sends, and to whom
 
-Two requests, both to YouTube/Google, both only about public channel metadata:
+Three requests, all to YouTube/Google, all only about public channel and video metadata:
 
 1. **`https://www.youtube.com/@handle/about`** — the channel's public About page, to read
    the country the creator declares. This is the same page you can open yourself. It is
    requested only for channels that appear in your feed, and only while a country rule is
    active.
-2. **`https://youtube.googleapis.com/youtube/v3/channels`** — only if you supply your own
+2. **`https://www.youtube.com/oembed`** — YouTube's public description of a single video,
+   to read which channel uploaded it and its title. It is requested for the video you open
+   on a watch or Shorts page while Beej is set to block watch pages, or when you right-click
+   and choose "Block the channel on this page". It is about that video only.
+3. **`https://youtube.googleapis.com/youtube/v3/channels`** — only if you supply your own
    YouTube Data API key, as a fallback when the first request does not yield a country.
 
 No request carries your rules, your history, an identifier, or anything about you beyond
@@ -58,8 +62,8 @@ what a normal browser request to YouTube already carries.
 - **`contextMenus`** — for the right-click "Block this YouTube channel" item.
 - **`scripting`** — to start filtering in YouTube tabs that were already open when the
   extension loaded or updated, instead of making you reload them.
-- **`https://www.youtube.com/*`** — to hide videos on the page and to read public channel
-  About pages. This is the extension's entire purpose.
+- **`https://www.youtube.com/*`** — to hide videos on the page, to read public channel
+  About pages, and to look up which channel a video belongs to. This is the extension's entire purpose.
 - **`https://youtube.googleapis.com/*`** — used only if you enter your own API key.
 
 ## Removing everything

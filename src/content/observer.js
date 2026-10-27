@@ -360,17 +360,46 @@
       return;
     }
 
-    var key = isWatch ? BEEJ_EXTRACT.watchPageChannelKey() : BEEJ_EXTRACT.pageChannelKey();
+    if (!isWatch) {
+      judgeFullPage(BEEJ_EXTRACT.pageChannelKey(), '', false);
+      return;
+    }
+
+    var href = location.href;
+    pageVideo().then(function (v) {
+      if (location.href !== href) return;   // navigated on while resolving
+      judgeFullPage(v && v.key, (v && v.title) || '', true);
+    });
+  }
+
+  /* Channel and title of the video on a watch or Shorts page. oEmbed comes
+     first because it goes by the id in the URL, where the DOM can still hold
+     the previous video's owner, and it covers Shorts and collaborations. The
+     DOM is the fallback for videos oEmbed refuses, on /watch only: a Shorts
+     page has no watch-page markup of its own, just a possibly stale one. */
+  var videoOwners = new Map();    // videoId -> Promise<{ key, title } | null>
+
+  function pageVideo() {
+    var id = BEEJ_EXTRACT.currentVideoId();
+    if (!id) return Promise.resolve(null);
+    if (!videoOwners.has(id)) videoOwners.set(id, BEEJ.fetchVideoOwner(id));
+    return videoOwners.get(id).then(function (v) {
+      if (v || BEEJ_EXTRACT.isShortsPage()) return v;
+      var key = BEEJ_EXTRACT.watchPageChannelKey();
+      return key ? { key: key, title: BEEJ_EXTRACT.watchPageTitle() } : null;
+    });
+  }
+
+  function judgeFullPage(key, title, isWatch) {
     if (!key || allowed(key)) {
       BEEJ_ENFORCE.removeCard();
       return;
     }
 
-    var stamp = location.pathname + '|' + key;
+    var stamp = fullPageStamp(key);
     if (stamp === lastFullPageKey) return;
     lastFullPageKey = stamp;
 
-    var title = isWatch ? BEEJ_EXTRACT.watchPageTitle() : '';
     var info = { channelKey: key, channelName: '', title: title };
 
     if (blockedChannel(key)) {
@@ -416,8 +445,14 @@
     });
   }
 
+  /* Every /watch page shares a pathname, so the query (the video id) is part
+     of what makes a page the same page. */
+  function fullPageStamp(key) {
+    return location.pathname + location.search + '|' + key;
+  }
+
   function stampChanged(key) {
-    return lastFullPageKey !== location.pathname + '|' + key;
+    return lastFullPageKey !== fullPageStamp(key);
   }
 
   /* ------------------------------------------------------------------ boot */
@@ -458,11 +493,12 @@
       // Which channel does the current page belong to? Backs the "Block the
       // channel on this page" context-menu item.
       if (msg.type === 'beej:currentChannel') {
-        var key = BEEJ_EXTRACT.isWatchPage()
-          ? BEEJ_EXTRACT.watchPageChannelKey()
-          : BEEJ_EXTRACT.pageChannelKey();
-        sendResponse({ key: key });
-        return;
+        if (!BEEJ_EXTRACT.isWatchPage()) {
+          sendResponse({ key: BEEJ_EXTRACT.pageChannelKey() });
+          return;
+        }
+        pageVideo().then(function (v) { sendResponse({ key: v ? v.key : null }); });
+        return true;
       }
     });
 

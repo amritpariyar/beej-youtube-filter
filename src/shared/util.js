@@ -284,11 +284,32 @@ var BEEJ = (function () {
     });
   }
 
+  /* A video's uploader and title, from YouTube's oEmbed endpoint. It works
+     from the video id alone, so it answers where the watch-page DOM cannot:
+     Shorts, whose player has none of the watch-page markup, and collaboration
+     videos, whose owner block is a stack of avatars with no channel link.
+     For a collaboration it names the uploading channel only.
+
+     Resolves to { key, title }, or null when oEmbed refuses (the owner turned
+     embedding off, or the video is private) or the request fails. */
+  function fetchVideoOwner(videoId) {
+    var url = 'https://www.youtube.com/oembed?format=json&url=' +
+      encodeURIComponent('https://www.youtube.com/watch?v=' + videoId);
+    return fetch(url).then(function (res) {
+      if (!res.ok) return null;
+      return res.json().then(function (j) {
+        var key = channelKey(j && j.author_url);
+        return key ? { key: key, title: String(j.title || '').trim() } : null;
+      });
+    }).catch(function () { return null; });
+  }
+
   return {
     DEFAULTS: DEFAULTS,
     CACHE_PREFIX: CACHE_PREFIX,
     aboutUrl: aboutUrl,
     fetchAboutCountryName: fetchAboutCountryName,
+    fetchVideoOwner: fetchVideoOwner,
     getSettings: getSettings,
     setSettings: setSettings,
     channelKey: channelKey,

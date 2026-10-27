@@ -31,17 +31,32 @@ check('call sites cover manual, language and country',
   hasManual && hasLang && hasCountry,
   JSON.stringify({ hasManual, hasLang, hasCountry, calls }));
 
-// 3. The title is resolved before the manual branch uses it (it used to be
-//    declared after, which would have logged an empty title).
-const chk = src.match(/function checkFullPage\(\)[\s\S]*?\n  \}\n/);
-const titleAt = chk[0].indexOf('var title =');
-const manualAt = chk[0].indexOf('blockedChannel(key)');
-check('title is computed before the manual-block branch',
+// 3. The title is in the log entry before the manual branch uses it (it used
+//    to be declared after, which would have logged an empty title).
+const chk = src.match(/function judgeFullPage\(key, title, isWatch\)[\s\S]*?\n  \}\n/);
+check('judgeFullPage takes the title', !!chk, 'judgeFullPage(key, title, isWatch) not found');
+const body = chk ? chk[0] : '';
+const titleAt = body.indexOf('title: title');
+const manualAt = body.indexOf('blockedChannel(key)');
+check('title is in the log entry before the manual-block branch',
   titleAt !== -1 && titleAt < manualAt, 'title@' + titleAt + ' manual@' + manualAt);
 
 // 4. Full-page language verdicts feed the tally too.
-check('checkFullPage tallies the language it detected',
-  /tallyLang\(verdict\)/.test(chk[0]), 'missing tallyLang in checkFullPage');
+check('judgeFullPage tallies the language it detected',
+  /tallyLang\(verdict\)/.test(body), 'missing tallyLang in judgeFullPage');
+
+// 4b. Watch and Shorts pages go by the video id in the URL, not the DOM alone,
+//     and a page that changed while resolving is left alone.
+const cfp = src.match(/function checkFullPage\(\)[\s\S]*?\n  \}\n/);
+check('checkFullPage resolves video pages through pageVideo()',
+  cfp && /pageVideo\(\)\.then/.test(cfp[0]) && /location\.href !== href/.test(cfp[0]),
+  cfp ? cfp[0].slice(0, 300) : 'checkFullPage not found');
+const pv = src.match(/function pageVideo\(\)[\s\S]*?\n  \}\n/);
+check('pageVideo asks oEmbed first and skips the DOM fallback on Shorts',
+  pv && pv[0].indexOf('fetchVideoOwner') !== -1 &&
+  pv[0].indexOf('fetchVideoOwner') < pv[0].indexOf('watchPageChannelKey') &&
+  /isShortsPage\(\)/.test(pv[0]),
+  pv ? pv[0] : 'pageVideo not found');
 
 // 5. The worker must keep the port open for log writes.
 const w = fs.readFileSync(ROOT + 'src/background/worker.js', 'utf8');

@@ -153,6 +153,19 @@ back to the whole script group when CLD cannot tell them apart.
 Anything it can't call confidently is left visible. Short titles are exactly what CLD is
 worst at, so the bias is deliberately toward letting content through.
 
+### Watch and Shorts pages
+
+A video page is judged by the video id in its URL. Beej asks YouTube's oEmbed endpoint
+(`/oembed?url=…`, a small public JSON reply) which channel uploaded that video and what it
+is called, then applies the same rules as for a tile. The page itself is a poor source:
+the Shorts player has none of the watch-page markup, a collaboration video shows a stack
+of avatars with no channel link, and YouTube keeps the previous video's player in the DOM
+after navigating, so its owner link can belong to the wrong video. The answer is cached
+per video for the life of the tab.
+
+If oEmbed refuses (the owner turned embedding off), a `/watch` page falls back to reading
+the owner from the page.
+
 ### Blocking a channel outright
 
 Country and language are rules; some channels just need to go. Right-click a channel name
@@ -218,7 +231,7 @@ parental-lock block in `options.js`; an empty string hides the link.
 ## Building and publishing
 
 ```bash
-sh tools/test/run.sh         # 10 suites, all reading the real source
+sh tools/test/run.sh         # 11 suites, all reading the real source
 python tools/preflight.py    # what Chrome validates: files, encoding, icons
 python tools/pack.py         # builds beej-<version>.zip for the Web Store
 python tools/make_icons.py   # regenerates the icon set (needs Pillow)
@@ -230,7 +243,8 @@ them, so they fail when behaviour drifts: `test_modes` covers both filtering mod
 `test_migrate` the settings rename, `test_narrow` the script-to-language narrowing,
 `test_log` and `test_fullpage` the block record, `test_status` and `test_summary` the
 options predictions, `test_pending` the only-mode provisional hide, `test_lock` and
-`test_licence` the parental lock and key check. They need only Node.
+`test_licence` the parental lock and key check, `test_video` how watch and Shorts pages
+are matched to a channel. They need only Node.
 
 The user-guide images are made by `tools/screenshots.js`. It loads the unpacked extension
 into a throwaway Chromium profile, so no personal feed or history appears in them, steps
@@ -398,18 +412,18 @@ says.
 - **Country is self-declared and optional.** A large share of channels declare none.
   This filters *declared* origin; it is not a geolocation tool, and it cannot tell you
   where a creator actually is.
-- **Shorts can only be filtered by language.** Shorts tiles
+- **Shorts tiles in feeds can only be filtered by language.** Shorts tiles
   (`ytm-shorts-lockup-view-model`) carry a title but no channel link at all — on a
   sampled search page, 30 of 59 tiles were shorts and none exposed a channel. With no
-  channel to resolve, there is no country to check, so country rules do not apply to
-  them.
-- **Collaboration videos are not filtered on the watch page.** When a video lists several
-  owners ("YouTube and Haley Pham"), the owner block uses different markup and
-  `watchPageChannelKey()` in `extract.js` finds no channel, so neither channel nor country
-  rules apply and the video plays, parental lock or not.
-- **Shorts on the Shorts player are largely unfiltered.** On `/shorts/` the watch-page
-  selectors find no channel, or a stale one from a hidden watch page, so a Short can play
-  under a rule that should block it.
+  channel to resolve, there is no country to check, and blocked or allowed channels are
+  not recognised. Opening a Short is different: the Shorts player is filtered by every
+  rule (see [Watch and Shorts pages](#watch-and-shorts-pages)).
+- **A collaboration video is judged by its uploader only.** oEmbed names the channel that
+  uploaded it, not the other channels credited, so blocking a guest channel does not
+  block its collaborations on someone else's channel.
+- **Videos with embedding turned off fall back to the page.** oEmbed refuses them, so on
+  `/watch` Beej reads the owner from the DOM as before, which finds nothing for a
+  collaboration. On the Shorts player there is no fallback, and such a Short plays.
 - **The watch-page sidebar cannot be country-filtered.** Its tiles
   (`yt-lockup-view-model` under `#related`) render the channel as plain text with no
   anchor and expose no channel id on the element, so there is no key to resolve. Verified
@@ -440,9 +454,8 @@ never be filtered.
 ## Contributing
 
 Bug reports, fixes and new filters are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers
-setup, tests and the few rules the code relies on. The two gaps under
-[Known limits](#known-limits), collaboration videos and the Shorts player, are good
-places to start.
+setup, tests and the few rules the code relies on. [Known limits](#known-limits) is a good
+place to look for something to work on; Shorts tiles in feeds are the biggest open gap.
 
 ## Licence
 

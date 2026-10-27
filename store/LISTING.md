@@ -59,7 +59,8 @@ PRIVACY
 
 There is no server, no account and no analytics. Your rules and caches stay in the browser.
 Nothing is collected, and nothing is sold or shared. The only network requests are to
-YouTube itself, for the public About page of channels in your feed.
+YouTube itself: the public About page of channels in your feed, and YouTube's public
+description of a video you open, to see which channel it belongs to.
 
 HONEST LIMITS
 
@@ -67,8 +68,9 @@ HONEST LIMITS
   This filters declared origin. It is not a geolocation tool.
 - Language is inferred from the video title, not the audio. A Hindi video with an English
   title will get through.
-- Shorts and the watch-page sidebar do not expose a channel link, so country rules cannot
-  apply there. Language filtering still works.
+- Shorts tiles in feeds and the watch-page sidebar do not expose a channel link, so
+  country rules cannot apply there. Language filtering still works. Opening a Short is
+  filtered by every rule.
 ```
 
 ## Permission justifications
@@ -100,7 +102,8 @@ only ever called with the extension's own bundled files, on youtube.com tabs.
 ```
 The extension's entire function. Needed to hide video tiles on the page and to read the
 public "About" page of channels appearing in the feed, which is where YouTube publishes the
-country a creator declares.
+country a creator declares. On a watch or Shorts page it also reads YouTube's public oEmbed
+description of the open video, to find the channel that uploaded it.
 ```
 
 **Host permission `https://youtube.googleapis.com/*`**
