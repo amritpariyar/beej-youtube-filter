@@ -252,11 +252,44 @@ submission checklist are in [`store/LISTING.md`](store/LISTING.md).
 Bump `version` in `manifest.json` for every resubmission; the store rejects a repeated
 version number.
 
+### Releasing on GitHub
+
+Commit the version bump to `main`, then publish a release whose tag is the version with a
+`v` in front:
+
+```bash
+gh release create v0.5.0 --title "Beej 0.5.0" --notes "What changed"
+```
+
+`.github/workflows/release.yml` then runs the tests and preflight, builds the zip with
+`tools/pack.py` and attaches it to the release. It refuses a tag that does not match
+`manifest.json`. To rebuild the zip for a release that already exists, run the workflow by
+hand from the Actions tab with the tag.
+
 ## Install
 
-1. `chrome://extensions` → enable **Developer mode**
-2. **Load unpacked** → select this folder
-3. The options page opens on first install. Pick countries and/or languages to block.
+### From a release
+
+1. Download `beej-<version>.zip` from the latest release on the
+   [Releases page](https://github.com/amritpariyar/beej-extension/releases/latest).
+2. Unzip it into a folder you will keep. Chrome loads the extension from that folder, so
+   deleting or moving it removes Beej.
+3. Open `chrome://extensions`, turn on **Developer mode** (top right), click **Load
+   unpacked** and select the unzipped folder.
+4. The options page opens on first install. Pick countries and/or languages to block.
+
+Installed this way, Beej does not update itself. To update, download the new zip, unzip it
+over the same folder, and click the reload icon on Beej's card in `chrome://extensions`.
+Your settings are kept. Use the same folder: Chrome identifies an unpacked extension by
+its path, so a copy in a new folder is a new extension and starts with empty settings. Chrome may remind you that developer-mode extensions are running;
+that is expected for anything not installed from the Chrome Web Store.
+
+### From source
+
+1. Clone this repository.
+2. `chrome://extensions` → enable **Developer mode**
+3. **Load unpacked** → select the repository folder
+4. The options page opens on first install. Pick countries and/or languages to block.
 
 YouTube tabs that were already open do not need reloading — manifest content scripts only
 run on navigations after the extension loads, so the worker injects into them directly on

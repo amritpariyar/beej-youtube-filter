@@ -8,9 +8,10 @@ mud at 16, so the small sizes get their own simplified draw.
 import os
 from PIL import Image, ImageDraw
 
-OUT = 'E:/beej-extension/src/icons'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, 'src', 'icons')
 os.makedirs(OUT, exist_ok=True)
-os.makedirs('E:/beej-extension/store', exist_ok=True)
+os.makedirs(os.path.join(ROOT, 'store'), exist_ok=True)
 
 BG = (15, 15, 15, 255)
 RING = (250, 250, 250, 255)
@@ -82,5 +83,5 @@ for size in (48, 128):
 # Store small promo tile.
 promo = Image.new('RGBA', (440, 280), BG)
 promo.alpha_composite(big.resize((160, 160), Image.LANCZOS), (40, 60))
-promo.convert('RGB').save('E:/beej-extension/store/promo-440x280.png')
+promo.convert('RGB').save(os.path.join(ROOT, 'store', 'promo-440x280.png'))
 print('wrote store/promo-440x280.png')

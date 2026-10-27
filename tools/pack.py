@@ -6,7 +6,7 @@ wonder what store/LISTING.md is doing inside the package.
 """
 import io, json, os, zipfile
 
-ROOT = 'E:/beej-extension'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INCLUDE_DIRS = ['src']
 INCLUDE_FILES = ['manifest.json']
 SKIP_EXT = {'.md', '.py', '.zip', '.log'}

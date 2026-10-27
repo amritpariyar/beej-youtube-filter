@@ -1,6 +1,6 @@
 import io, json, os, sys, unicodedata
 
-ROOT = 'E:/beej-extension'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 problems = []
 
 
