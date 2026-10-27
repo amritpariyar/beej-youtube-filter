@@ -3,7 +3,8 @@ const ROOT = require('path').resolve(__dirname, '../..') + '/';
    watch-page or channel-page block never reached "What has been blocked".
    Confirm every branch now logs, with the right kind and detail. */
 const fs = require('fs');
-const src = fs.readFileSync(ROOT + 'src/content/observer.js', 'utf8');
+// Normalised so a Windows checkout with CRLF endings matches the patterns below.
+const src = fs.readFileSync(ROOT + 'src/content/observer.js', 'utf8').replace(/\r\n/g, '\n');
 
 let ok = true;
 function check(label, cond, extra) {
