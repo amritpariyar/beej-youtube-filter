@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Beej: Country, Language and Channel Filter for YouTube",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Filter YouTube by a channel's declared country, by the content's language, or block channels one by one.",
   "icons": {
     "16": "src/icons/icon16.png",
